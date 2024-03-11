@@ -429,7 +429,7 @@ func TestExtractGDPRSignal(t *testing.T) {
 
 func TestExtractPrivacyPolicies(t *testing.T) {
 	type testInput struct {
-		request                  cookieSyncRequest
+		request                  CookieSyncRequest
 		usersyncDefaultGDPRValue string
 	}
 	type testOutput struct {
@@ -446,7 +446,7 @@ func TestExtractPrivacyPolicies(t *testing.T) {
 		{
 			desc: "request GPP string is malformed, expect empty policies, signal No and error",
 			in: testInput{
-				request: cookieSyncRequest{GPP: "malformedGPPString"},
+				request: CookieSyncRequest{GPP: "malformedGPPString"},
 			},
 			expected: testOutput{
 				macros:     macros.UserSyncPrivacy{},
@@ -458,7 +458,7 @@ func TestExtractPrivacyPolicies(t *testing.T) {
 		{
 			desc: "Malformed GPPSid string",
 			in: testInput{
-				request: cookieSyncRequest{
+				request: CookieSyncRequest{
 					GPP:       "DBACNYA~CPXxRfAPXxRfAAfKABENB-CgAAAAAAAAAAYgAAAAAAAA~1YNN",
 					GPPSID:    "malformed",
 					USPrivacy: "1YYY",
@@ -474,7 +474,7 @@ func TestExtractPrivacyPolicies(t *testing.T) {
 		{
 			desc: "request USPrivacy string is different from the one in the GPP string, expect empty policies, signalNo and error",
 			in: testInput{
-				request: cookieSyncRequest{
+				request: CookieSyncRequest{
 					GPP:       "DBACNYA~CPXxRfAPXxRfAAfKABENB-CgAAAAAAAAAAYgAAAAAAAA~1YNN",
 					GPPSID:    "6",
 					USPrivacy: "1YYY",
@@ -490,7 +490,7 @@ func TestExtractPrivacyPolicies(t *testing.T) {
 		{
 			desc: "no issues extracting privacy policies from request GPP and request GPPSid strings",
 			in: testInput{
-				request: cookieSyncRequest{
+				request: CookieSyncRequest{
 					GPP:    "DBACNYA~CPXxRfAPXxRfAAfKABENB-CgAAAAAAAAAAYgAAAAAAAA~1YNN",
 					GPPSID: "6",
 				},
@@ -1082,13 +1082,13 @@ func TestSetLimit(t *testing.T) {
 
 	testCases := []struct {
 		description     string
-		givenRequest    cookieSyncRequest
+		givenRequest    CookieSyncRequest
 		givenAccount    *config.Account
-		expectedRequest cookieSyncRequest
+		expectedRequest CookieSyncRequest
 	}{
 		{
 			description: "Default Limit is Applied (request limit = 0)",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				Limit: 0,
 			},
 			givenAccount: &config.Account{
@@ -1096,13 +1096,13 @@ func TestSetLimit(t *testing.T) {
 					DefaultLimit: &int20,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				Limit: 20,
 			},
 		},
 		{
 			description: "Default Limit is Not Applied (default limit not set)",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				Limit: 0,
 			},
 			givenAccount: &config.Account{
@@ -1110,13 +1110,13 @@ func TestSetLimit(t *testing.T) {
 					DefaultLimit: nil,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				Limit: 0,
 			},
 		},
 		{
 			description: "Default Limit is Not Applied (request limit > 0)",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				Limit: 10,
 			},
 			givenAccount: &config.Account{
@@ -1124,13 +1124,13 @@ func TestSetLimit(t *testing.T) {
 					DefaultLimit: &int20,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				Limit: 10,
 			},
 		},
 		{
 			description: "Max Limit is Applied (request limit <= 0)",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				Limit: 0,
 			},
 			givenAccount: &config.Account{
@@ -1138,13 +1138,13 @@ func TestSetLimit(t *testing.T) {
 					MaxLimit: &int30,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				Limit: 30,
 			},
 		},
 		{
 			description: "Max Limit is Applied (0 < max < limit)",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				Limit: 40,
 			},
 			givenAccount: &config.Account{
@@ -1152,13 +1152,13 @@ func TestSetLimit(t *testing.T) {
 					MaxLimit: &int30,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				Limit: 30,
 			},
 		},
 		{
 			description: "Max Limit is Not Applied (max not set)",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				Limit: 10,
 			},
 			givenAccount: &config.Account{
@@ -1166,13 +1166,13 @@ func TestSetLimit(t *testing.T) {
 					MaxLimit: nil,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				Limit: 10,
 			},
 		},
 		{
 			description: "Max Limit is Not Applied (0 < limit < max)",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				Limit: 10,
 			},
 			givenAccount: &config.Account{
@@ -1180,13 +1180,13 @@ func TestSetLimit(t *testing.T) {
 					MaxLimit: &int30,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				Limit: 10,
 			},
 		},
 		{
 			description: "Max Limit is Applied After applying the default",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				Limit: 0,
 			},
 			givenAccount: &config.Account{
@@ -1195,13 +1195,13 @@ func TestSetLimit(t *testing.T) {
 					MaxLimit:     &int30,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				Limit: 30,
 			},
 		},
 		{
 			description: "Negative Value Check",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				Limit: 0,
 			},
 			givenAccount: &config.Account{
@@ -1210,7 +1210,7 @@ func TestSetLimit(t *testing.T) {
 					MaxLimit:     &intNegative1,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				Limit: 0,
 			},
 		},
@@ -1229,13 +1229,13 @@ func TestSetCooperativeSync(t *testing.T) {
 
 	testCases := []struct {
 		description     string
-		givenRequest    cookieSyncRequest
+		givenRequest    CookieSyncRequest
 		givenAccount    *config.Account
-		expectedRequest cookieSyncRequest
+		expectedRequest CookieSyncRequest
 	}{
 		{
 			description: "Request coop sync unmodified - request sync nil & default sync nil",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				CooperativeSync: nil,
 			},
 			givenAccount: &config.Account{
@@ -1243,13 +1243,13 @@ func TestSetCooperativeSync(t *testing.T) {
 					DefaultCoopSync: nil,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				CooperativeSync: nil,
 			},
 		},
 		{
 			description: "Request coop sync set to default - request sync nil & default sync not nil",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				CooperativeSync: nil,
 			},
 			givenAccount: &config.Account{
@@ -1257,13 +1257,13 @@ func TestSetCooperativeSync(t *testing.T) {
 					DefaultCoopSync: &coopSyncTrue,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				CooperativeSync: &coopSyncTrue,
 			},
 		},
 		{
 			description: "Request coop sync unmodified - request sync not nil & default sync nil",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				CooperativeSync: &coopSyncTrue,
 			},
 			givenAccount: &config.Account{
@@ -1271,13 +1271,13 @@ func TestSetCooperativeSync(t *testing.T) {
 					DefaultCoopSync: nil,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				CooperativeSync: &coopSyncTrue,
 			},
 		},
 		{
 			description: "Request coop sync unmodified - request sync not nil & default sync not nil",
-			givenRequest: cookieSyncRequest{
+			givenRequest: CookieSyncRequest{
 				CooperativeSync: &coopSyncFalse,
 			},
 			givenAccount: &config.Account{
@@ -1285,7 +1285,7 @@ func TestSetCooperativeSync(t *testing.T) {
 					DefaultCoopSync: &coopSyncTrue,
 				},
 			},
-			expectedRequest: cookieSyncRequest{
+			expectedRequest: CookieSyncRequest{
 				CooperativeSync: &coopSyncFalse,
 			},
 		},
@@ -1769,21 +1769,21 @@ func TestCookieSyncHandleResponse(t *testing.T) {
 func TestMapBidderStatusToAnalytics(t *testing.T) {
 	testCases := []struct {
 		description string
-		given       []cookieSyncResponseBidder
+		given       []CookieSyncResponseBidder
 		expected    []*analytics.CookieSyncBidder
 	}{
 		{
 			description: "None",
-			given:       []cookieSyncResponseBidder{},
+			given:       []CookieSyncResponseBidder{},
 			expected:    []*analytics.CookieSyncBidder{},
 		},
 		{
 			description: "One",
-			given: []cookieSyncResponseBidder{
+			given: []CookieSyncResponseBidder{
 				{
 					BidderCode:   "a",
 					NoCookie:     true,
-					UsersyncInfo: cookieSyncResponseSync{URL: "aURL", Type: "aType", SupportCORS: false},
+					UsersyncInfo: CookieSyncResponseSync{URL: "aURL", Type: "aType", SupportCORS: false},
 				},
 			},
 			expected: []*analytics.CookieSyncBidder{
@@ -1796,16 +1796,16 @@ func TestMapBidderStatusToAnalytics(t *testing.T) {
 		},
 		{
 			description: "Many",
-			given: []cookieSyncResponseBidder{
+			given: []CookieSyncResponseBidder{
 				{
 					BidderCode:   "a",
 					NoCookie:     true,
-					UsersyncInfo: cookieSyncResponseSync{URL: "aURL", Type: "aType", SupportCORS: false},
+					UsersyncInfo: CookieSyncResponseSync{URL: "aURL", Type: "aType", SupportCORS: false},
 				},
 				{
 					BidderCode:   "b",
 					NoCookie:     false,
-					UsersyncInfo: cookieSyncResponseSync{URL: "bURL", Type: "bType", SupportCORS: true},
+					UsersyncInfo: CookieSyncResponseSync{URL: "bURL", Type: "bType", SupportCORS: true},
 				},
 			},
 			expected: []*analytics.CookieSyncBidder{

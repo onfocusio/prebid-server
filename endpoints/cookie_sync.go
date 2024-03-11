@@ -120,7 +120,7 @@ func (c *cookieSyncEndpoint) parseRequest(r *http.Request) (usersync.Request, ma
 		return usersync.Request{}, macros.UserSyncPrivacy{}, errCookieSyncBody
 	}
 
-	request := cookieSyncRequest{}
+	request := CookieSyncRequest{}
 	if err := jsonutil.UnmarshalValid(body, &request); err != nil {
 		return usersync.Request{}, macros.UserSyncPrivacy{}, fmt.Errorf("JSON parsing failed: %s", err.Error())
 	}
@@ -188,7 +188,7 @@ func (c *cookieSyncEndpoint) parseRequest(r *http.Request) (usersync.Request, ma
 	return rx, privacyMacros, nil
 }
 
-func extractPrivacyPolicies(request cookieSyncRequest, usersyncDefaultGDPRValue string) (macros.UserSyncPrivacy, gdpr.Signal, privacy.Policies, error) {
+func extractPrivacyPolicies(request CookieSyncRequest, usersyncDefaultGDPRValue string) (macros.UserSyncPrivacy, gdpr.Signal, privacy.Policies, error) {
 	// GDPR
 	gppSID, err := stringutil.StrToInt8Slice(request.GPPSID)
 	if err != nil {
@@ -277,7 +277,7 @@ func (c *cookieSyncEndpoint) writeParseRequestErrorMetrics(err error) {
 	}
 }
 
-func (c *cookieSyncEndpoint) setLimit(request cookieSyncRequest, cookieSyncConfig config.CookieSync) cookieSyncRequest {
+func (c *cookieSyncEndpoint) setLimit(request CookieSyncRequest, cookieSyncConfig config.CookieSync) CookieSyncRequest {
 	if request.Limit <= 0 && cookieSyncConfig.DefaultLimit != nil {
 		request.Limit = *cookieSyncConfig.DefaultLimit
 	}
@@ -291,7 +291,7 @@ func (c *cookieSyncEndpoint) setLimit(request cookieSyncRequest, cookieSyncConfi
 	return request
 }
 
-func (c *cookieSyncEndpoint) setCooperativeSync(request cookieSyncRequest, cookieSyncConfig config.CookieSync) cookieSyncRequest {
+func (c *cookieSyncEndpoint) setCooperativeSync(request CookieSyncRequest, cookieSyncConfig config.CookieSync) CookieSyncRequest {
 	if request.CooperativeSync == nil && cookieSyncConfig.DefaultCoopSync != nil {
 		request.CooperativeSync = cookieSyncConfig.DefaultCoopSync
 	}
@@ -407,9 +407,9 @@ func (c *cookieSyncEndpoint) handleResponse(w http.ResponseWriter, tf usersync.S
 		status = "ok"
 	}
 
-	response := cookieSyncResponse{
+	response := CookieSyncResponse{
 		Status:       status,
-		BidderStatus: make([]cookieSyncResponseBidder, 0, len(s)),
+		BidderStatus: make([]CookieSyncResponseBidder, 0, len(s)),
 	}
 
 	for _, syncerChoice := range s {
@@ -420,10 +420,10 @@ func (c *cookieSyncEndpoint) handleResponse(w http.ResponseWriter, tf usersync.S
 			continue
 		}
 
-		response.BidderStatus = append(response.BidderStatus, cookieSyncResponseBidder{
+		response.BidderStatus = append(response.BidderStatus, CookieSyncResponseBidder{
 			BidderCode: syncerChoice.Bidder,
 			NoCookie:   true,
-			UsersyncInfo: cookieSyncResponseSync{
+			UsersyncInfo: CookieSyncResponseSync{
 				URL:         sync.URL,
 				Type:        string(sync.Type),
 				SupportCORS: sync.SupportCORS,
@@ -460,7 +460,7 @@ func (c *cookieSyncEndpoint) handleResponse(w http.ResponseWriter, tf usersync.S
 	enc.Encode(response)
 }
 
-func mapBidderStatusToAnalytics(from []cookieSyncResponseBidder) []*analytics.CookieSyncBidder {
+func mapBidderStatusToAnalytics(from []CookieSyncResponseBidder) []*analytics.CookieSyncBidder {
 	to := make([]*analytics.CookieSyncBidder, len(from))
 	for i, b := range from {
 		to[i] = &analytics.CookieSyncBidder{
@@ -498,7 +498,7 @@ func getDebugMessage(status usersync.Status) string {
 	return ""
 }
 
-type cookieSyncRequest struct {
+type CookieSyncRequest struct {
 	Bidders         []string                         `json:"bidders"`
 	GDPR            *int                             `json:"gdpr"`
 	GDPRConsent     string                           `json:"gdpr_consent"`
@@ -522,19 +522,19 @@ type cookieSyncRequestFilter struct {
 	Mode    string      `json:"filter"`
 }
 
-type cookieSyncResponse struct {
+type CookieSyncResponse struct {
 	Status       string                     `json:"status"`
-	BidderStatus []cookieSyncResponseBidder `json:"bidder_status"`
+	BidderStatus []CookieSyncResponseBidder `json:"bidder_status"`
 	Debug        []cookieSyncResponseDebug  `json:"debug,omitempty"`
 }
 
-type cookieSyncResponseBidder struct {
+type CookieSyncResponseBidder struct {
 	BidderCode   string                 `json:"bidder"`
 	NoCookie     bool                   `json:"no_cookie,omitempty"`
-	UsersyncInfo cookieSyncResponseSync `json:"usersync,omitempty"`
+	UsersyncInfo CookieSyncResponseSync `json:"usersync,omitempty"`
 }
 
-type cookieSyncResponseSync struct {
+type CookieSyncResponseSync struct {
 	URL         string `json:"url,omitempty"`
 	Type        string `json:"type,omitempty"`
 	SupportCORS bool   `json:"supportCORS,omitempty"`
